@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ViT(nn.Module):
-    def __init__(self, num_classes, input_channels=6, input_size=256, patch_size=32, embed_dim=768, num_heads=12, depth=6):
+    def __init__(self, num_classes, input_channels=6, input_size=256, patch_size=16, embed_dim=768, num_heads=12, depth=6):
         """
         Custom Vision Transformer for 6-channel input image classification.
 
