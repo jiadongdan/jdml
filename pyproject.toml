@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jdml"
+version = "0.1.0"
+description = "jdml"
+requires-python = ">=3.9"
+authors = [{ name = "Jiadong Dan", email = "you@example.com" }]
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*", "docs*", "examples*"]
