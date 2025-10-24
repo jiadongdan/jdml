@@ -11,5 +11,6 @@ authors = [{ name = "Jiadong Dan", email = "you@example.com" }]
 dependencies = []
 
 [tool.setuptools.packages.find]
+include = ["jdml*"]
 where = ["."]
 exclude = ["tests*", "docs*", "examples*"]
