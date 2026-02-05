@@ -222,9 +222,9 @@ def train_model(model, train_loader, val_loader, num_epochs, optimizer, criterio
                     'loss': f'{loss.item():.4f}',
                     'acc': f'{100 * train_correct / train_total:.2f}%'
                 })
-            elif batch_idx % 10 == 0:  # Print every 10 batches if no tqdm
-                print(f'  Batch [{batch_idx}/{len(train_loader)}] - '
-                      f'Loss: {loss.item():.4f}, Acc: {100 * train_correct / train_total:.2f}%')
+            #elif batch_idx % 10 == 0:  # Print every 10 batches if no tqdm
+            #    print(f'  Batch [{batch_idx}/{len(train_loader)}] - '
+            #          f'Loss: {loss.item():.4f}, Acc: {100 * train_correct / train_total:.2f}%')
 
         # Calculate average training metrics
         epoch_train_loss = train_loss / train_total
