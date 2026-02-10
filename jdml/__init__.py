@@ -1,4 +1,4 @@
-from .dataio import load_h5_data
+from jdml.io.dataio import load_h5_data
 
 
 __all__ = [
