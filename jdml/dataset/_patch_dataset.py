@@ -99,9 +99,11 @@ class ScaleRotateCropPatchDataset(Dataset):
         self.deterministic = deterministic
         self.seed = seed
         if deterministic:
-            self.rng = np.random.RandomState(seed)
+            #self.rng = np.random.RandomState(seed)
+            self.rng = np.random.default_rng(seed)
         else:
-            self.rng = np.random
+            #self.rng = np.random
+            self.rng = np.random.default_rng()
 
         self.n_images = len(self.data)
         self.total_samples = self.n_images * n_patches
@@ -220,8 +222,10 @@ class ScaleRotateCropPatchDataset(Dataset):
             _, H, W = image.shape
 
         # Random crop location (using deterministic RNG if specified)
-        top = self.rng.randint(0, H - patch_size + 1)
-        left = self.rng.randint(0, W - patch_size + 1)
+        #top = self.rng.randint(0, H - patch_size + 1)
+        #left = self.rng.randint(0, W - patch_size + 1)
+        top = int(self.rng.integers(0, H - patch_size + 1))
+        left = int(self.rng.integers(0, W - patch_size + 1))
 
         patch = image[:, top:top+patch_size, left:left+patch_size]
         return patch
