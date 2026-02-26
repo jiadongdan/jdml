@@ -79,11 +79,13 @@ class ScaleRotateCropPatchDataset(Dataset):
             interpolation='bilinear',
             deterministic=False,
             seed=42,
+            label_offset=1,
     ):
         self.h5_path = Path(h5_file)
         self.group_name = group_name
         self.data_key = data_key
         self.labels_key = labels_key
+        self.label_offset = label_offset
 
         # --- Read metadata from HDF5 (open briefly, then close) ---
         with h5py.File(self.h5_path, 'r') as f:
@@ -319,7 +321,7 @@ class ScaleRotateCropPatchDataset(Dataset):
 
         # Label
         if self.has_labels:
-            label = int(self.label_cache[image_idx])
+            label = int(self.label_cache[image_idx]) - self.label_offset
             return patch, label
         else:
             return patch, image_idx
