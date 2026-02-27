@@ -58,6 +58,8 @@ class ScaleRotateCropPatchDataset(Dataset):
         interpolation: Interpolation mode ('bilinear', 'bicubic', 'nearest').
         deterministic: If True, use seeded RNG for reproducible augmentation.
         seed: Random seed for deterministic mode.
+        label_offset: Subtracted from raw label values (default 1 for 1-indexed labels).
+        use_symmetry: If True, load all channels. If False, load only the first channel.
 
     Returns per __getitem__:
         patch: torch.FloatTensor of shape (C, patch_size, patch_size)
@@ -80,12 +82,14 @@ class ScaleRotateCropPatchDataset(Dataset):
             deterministic=False,
             seed=42,
             label_offset=1,
+            use_symmetry=True,
     ):
         self.h5_path = Path(h5_file)
         self.group_name = group_name
         self.data_key = data_key
         self.labels_key = labels_key
         self.label_offset = label_offset
+        self.use_symmetry = use_symmetry
 
         # --- Read metadata from HDF5 (open briefly, then close) ---
         with h5py.File(self.h5_path, 'r') as f:
@@ -311,7 +315,10 @@ class ScaleRotateCropPatchDataset(Dataset):
         image_idx = idx // self.n_patches
 
         # Lazy read from HDF5 — only one image loaded at a time
-        image_np = self._get_dataset()[image_idx]  # (C, H, W) float32
+        if self.use_symmetry:
+            image_np = self._get_dataset()[image_idx]  # (C, H, W) float32
+        else:
+            image_np = self._get_dataset()[image_idx, :1] # keep only first channel → (1, H, W)
 
         # Augment and crop
         processed = self._process_image(image_np)
@@ -341,6 +348,8 @@ class ScaleRotateCropPatchDataset(Dataset):
             f"  n_patches_per_image={self.n_patches},",
             f"  patch_size={self.patch_size}x{self.patch_size},",
             f"  has_labels={self.has_labels},",
+            f"  label_offset={self.label_offset},",
+            f"  use_symmetry={self.use_symmetry},"
         ]
 
         aug_info = []
