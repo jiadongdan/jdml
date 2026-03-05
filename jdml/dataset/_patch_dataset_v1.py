@@ -60,6 +60,7 @@ class ScaleRotateCropPatchDataset(Dataset):
         seed: Random seed for deterministic mode.
         label_offset: Subtracted from raw label values (default 1 for 1-indexed labels).
         use_symmetry: If True, load all channels. If False, load only the first channel.
+        use_fft: If True, apply 2D FFT to each patch and return (amplitude, phase) as a 2-channel tensor. Forces use_symmetry=False.
 
     Returns per __getitem__:
         patch: torch.FloatTensor of shape (C, patch_size, patch_size)
@@ -83,12 +84,17 @@ class ScaleRotateCropPatchDataset(Dataset):
             seed=42,
             label_offset=1,
             use_symmetry=True,
+            use_fft=False,
     ):
         self.h5_path = Path(h5_file)
         self.group_name = group_name
         self.data_key = data_key
         self.labels_key = labels_key
         self.label_offset = label_offset
+
+        self.use_fft = use_fft
+        if use_fft:
+            use_symmetry = False  # FFT operates on single-channel images
         self.use_symmetry = use_symmetry
 
         # --- Read metadata from HDF5 (open briefly, then close) ---
@@ -326,6 +332,15 @@ class ScaleRotateCropPatchDataset(Dataset):
         # Extract patch
         patch = self._extract_random_patch(processed, self.patch_size)
 
+        # FFT transform: convert single-channel patch to (amplitude, phase)
+        if self.use_fft:
+            # patch shape: (1, P, P) — single channel enforced by use_symmetry=False
+            fft = torch.fft.fft2(patch[0].float())          # (P, P) complex
+            fft_shifted = torch.fft.fftshift(fft)
+            amplitude = torch.log1p(torch.abs(fft_shifted))  # log-scaled amplitude
+            phase = torch.angle(fft_shifted)                  # phase in [-π, π]
+            patch = torch.stack([amplitude, phase], dim=0)   # (2, P, P)
+
         # Label
         if self.has_labels:
             label = int(self.label_cache[image_idx]) - self.label_offset
@@ -349,7 +364,8 @@ class ScaleRotateCropPatchDataset(Dataset):
             f"  patch_size={self.patch_size}x{self.patch_size},",
             f"  has_labels={self.has_labels},",
             f"  label_offset={self.label_offset},",
-            f"  use_symmetry={self.use_symmetry},"
+            f"  use_symmetry={self.use_symmetry},",
+            f"  use_fft={self.use_fft},",
         ]
 
         aug_info = []
