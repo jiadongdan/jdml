@@ -4,6 +4,13 @@ import torch.optim as optim
 from tqdm import tqdm
 import os
 
+def _config_to_dict(config):
+    """Convert config to dict for checkpoint saving. Supports dict and SimpleNamespace."""
+    if config is None:
+        return None
+    if isinstance(config, dict):
+        return config
+    return vars(config)
 
 # Utility Functions
 def get_optimizer(model, optimizer_name='adam', lr=0.001, weight_decay=0, **kwargs):
@@ -73,7 +80,7 @@ def get_loss(loss_name='crossentropy', **kwargs):
 
 def train_model(model, train_loader, val_loader, num_epochs, optimizer, criterion,
                 device='cuda', checkpoint_dir='checkpoints', use_tqdm=True, resume_from=None,
-                scheduler=None):
+                scheduler=None, config=None):
     """
     Training loop with progress bars and model checkpointing
 
@@ -90,6 +97,7 @@ def train_model(model, train_loader, val_loader, num_epochs, optimizer, criterio
         resume_from: path to checkpoint to resume training from (optional)
         scheduler: learning rate scheduler (optional)
             Supports: ReduceLROnPlateau, StepLR, CosineAnnealingLR, etc.
+        config: SimpleNamespace, dict, or None - training config to save in checkpoint (optional)
 
     Saves two checkpoints:
         - 'best_model.pth': saved when validation loss improves (best for inference)
@@ -297,7 +305,8 @@ def train_model(model, train_loader, val_loader, num_epochs, optimizer, criterio
             'val_loss': epoch_val_loss,
             'train_acc': epoch_train_acc,
             'val_acc': epoch_val_acc,
-            'best_val_loss': best_val_loss
+            'best_val_loss': best_val_loss,
+            'train_config': _config_to_dict(config),
         }
 
         # Save scheduler state if it exists
@@ -317,7 +326,8 @@ def train_model(model, train_loader, val_loader, num_epochs, optimizer, criterio
                 'train_loss': epoch_train_loss,
                 'val_loss': epoch_val_loss,
                 'train_acc': epoch_train_acc,
-                'val_acc': epoch_val_acc
+                'val_acc': epoch_val_acc,
+                'train_config': _config_to_dict(config),
             }
 
             # Save scheduler state if it exists
