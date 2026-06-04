@@ -615,6 +615,20 @@ class CNNModel(nn.Module):
         print("=" * 80)
 
 
+    def plot_architecture(self, figsize=None, title="CNN Architecture",
+                          save_path=None, show=True, ax=None):
+        """Plot this model's architecture with matplotlib."""
+        from jdml.visualization import plot_cnn_architecture
+
+        return plot_cnn_architecture(
+            self,
+            figsize=figsize,
+            title=title,
+            save_path=save_path,
+            show=show,
+            ax=ax,
+        )
+
 
     @classmethod
     def from_config(cls, config):
